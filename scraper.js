@@ -118,6 +118,31 @@ function saveState(state) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
+// Yard dates are backdated: a car often appears on the site a day or more
+// after its yard date. So "new" means "VIN not seen before", and each daily
+// run looks back LOOKBACK_DAYS of yard dates to catch late postings.
+const LOOKBACK_DAYS = 7;
+const SEEN_RETENTION_DAYS = 30;
+
+function toIsoDate(yardDate) {
+  const [m, d, y] = (yardDate || '').split('/');
+  return y ? `${y}-${m}-${d}` : '';
+}
+
+function daysBefore(isoDate, days) {
+  const dt = new Date(`${isoDate}T12:00:00Z`);
+  dt.setUTCDate(dt.getUTCDate() - days);
+  return dt.toISOString().slice(0, 10);
+}
+
+function carKey(car) {
+  return car.vin || `${car.yard}|${car.year}|${car.make}|${car.model}|${car.row}|${car.yardDate}`;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 // ── Badge check ───────────────────────────────────────────────────────
 function checkBadge(year, make, model, collection) {
   const haystack = `${year} ${make} ${model}`.toLowerCase();
@@ -263,8 +288,16 @@ function sendTelegram(msg) {
       path: `/bot${TELEGRAM_TOKEN}/sendMessage`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-    }, res => resolve(res.statusCode));
-    req.on('error', () => resolve(null));
+    }, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        let parsed = null;
+        try { parsed = JSON.parse(data); } catch {}
+        resolve({ ok: !!(parsed && parsed.ok), status: res.statusCode, body: data });
+      });
+    });
+    req.on('error', err => resolve({ ok: false, status: null, body: String(err) }));
     req.write(body);
     req.end();
   });
@@ -273,13 +306,14 @@ function sendTelegram(msg) {
 // ── Main ──────────────────────────────────────────────────────────────
 (async () => {
   const state = loadState();
-  const lastRunDate = state.lastRunDate || null;
+  const today = new Date().toISOString().slice(0, 10);
+  const lookbackDate = daysBefore(today, LOOKBACK_DAYS);
 
   // For daily runs: only fetch pages until we're past yesterday's date
   // For --full: fetch everything
   const cars = await scrapeAll({
     fullScan: FULL,
-    stopAfterDate: (!FULL && !DUMP && lastRunDate) ? lastRunDate : null,
+    stopAfterDate: (!FULL && !DUMP) ? lookbackDate : null,
   });
   console.error(`Total vehicles fetched: ${cars.length}`);
 
@@ -289,16 +323,14 @@ function sendTelegram(msg) {
   }
 
   const collection = loadCollection();
-  const today = new Date().toISOString().slice(0, 10);
 
-  // Find cars added since last run
-  const sinceDate = state.lastRunDate || today;
-  const newToday = cars.filter(c => {
-    if (!c.yardDate) return false;
-    const [m, d, y] = c.yardDate.split('/');
-    const isoDate = `${y}-${m}-${d}`;
-    return isoDate >= sinceDate;
-  });
+  // Find cars not seen on any previous run. First run with this scheme has
+  // no seen list yet, so fall back to yard dates since 3 days before the last run.
+  const seen = state.seenVehicles || null;
+  const firstSince = daysBefore(state.lastRunDate || today, 3);
+  const newToday = cars.filter(c => seen
+    ? !seen[carKey(c)]
+    : toIsoDate(c.yardDate) >= firstSince);
 
   // Group ALL inventory by make + model
   const byMakeModel = {};
@@ -320,7 +352,7 @@ function sendTelegram(msg) {
   const sortedMakeModel = Object.entries(byMakeModel).sort((a, b) => b[1] - a[1]);
   const makesSummary = sortedMakeModel
     .slice(0, MAX_MAKE_MODEL_LISTED)
-    .map(([makeModel, count]) => `  ${makeModel}: ${count}`)
+    .map(([makeModel, count]) => `  ${escapeHtml(makeModel)}: ${count}`)
     .join('\n');
   const makesSummaryMore = sortedMakeModel.length > MAX_MAKE_MODEL_LISTED
     ? `\n  …and ${sortedMakeModel.length - MAX_MAKE_MODEL_LISTED} more`
@@ -328,13 +360,13 @@ function sendTelegram(msg) {
 
   const yardLabel = FULL ? 'All Yards' : '📍 Pennsburg + Allentown';
   let msg = `🚗 <b>WeGotUsed ${yardLabel} — ${today}</b>\n`;
-  msg += `${cars.length} vehicles | ${newToday.length} new since last check\n\n`;
+  msg += `${cars.length} vehicles in the last ${LOOKBACK_DAYS} days | ${newToday.length} new since last check\n\n`;
 
   if (newToday.length > 0) {
     const MAX_LISTED = 40;
     msg += `<b>New Arrivals (${newToday.length}):</b>\n`;
     for (const c of newToday.slice(0, MAX_LISTED)) {
-      msg += `• ${c.year} ${c.make} ${c.model} [${c.yard}]\n`;
+      msg += `• ${escapeHtml(`${c.year} ${c.make} ${c.model}`)} [${escapeHtml(c.yard)}]\n`;
     }
     if (newToday.length > MAX_LISTED) {
       msg += `  …and ${newToday.length - MAX_LISTED} more\n`;
@@ -342,7 +374,7 @@ function sendTelegram(msg) {
     msg += `\n`;
   }
 
-  msg += `<b>By Make &amp; Model (all inventory):</b>\n${makesSummary}${makesSummaryMore}\n`;
+  msg += `<b>By Make &amp; Model (last ${LOOKBACK_DAYS} days):</b>\n${makesSummary}${makesSummaryMore}\n`;
 
   const pennsburgHits = hits.filter(h => h.yard === 'PENNSBURG');
   const otherHits = hits.filter(h => h.yard !== 'PENNSBURG');
@@ -352,7 +384,7 @@ function sendTelegram(msg) {
       msg += `\n📍 <b>PENNSBURG BADGE ALERTS — ${pennsburgHits.length} nearby:</b>\n`;
       for (const h of pennsburgHits) {
         const icon = h.badge.tier === 'RARE' ? '🔴' : h.badge.tier === 'HIGH' ? '🟠' : '🟡';
-        msg += `${icon} ${h.year} ${h.make} ${h.model} → <b>${h.badge.badge}</b>\n`;
+        msg += `${icon} ${escapeHtml(`${h.year} ${h.make} ${h.model}`)} → <b>${escapeHtml(h.badge.badge)}</b>\n`;
         if (h.vin) msg += `   VIN: ${h.vin}\n`;
       }
     }
@@ -360,7 +392,7 @@ function sendTelegram(msg) {
       msg += `\n🏷️ <b>OTHER BADGE ALERTS (${otherHits.length}):</b>\n`;
       for (const h of otherHits) {
         const icon = h.badge.tier === 'RARE' ? '🔴' : h.badge.tier === 'HIGH' ? '🟠' : '🟡';
-        msg += `${icon} ${h.year} ${h.make} ${h.model} [${h.yard}] → <b>${h.badge.badge}</b>\n`;
+        msg += `${icon} ${escapeHtml(`${h.year} ${h.make} ${h.model}`)} [${escapeHtml(h.yard)}] → <b>${escapeHtml(h.badge.badge)}</b>\n`;
         if (h.vin) msg += `   VIN: ${h.vin}\n`;
       }
     }
@@ -371,6 +403,13 @@ function sendTelegram(msg) {
   }
 
   // Save state
+  const cutoff = daysBefore(today, SEEN_RETENTION_DAYS);
+  const nextSeen = {};
+  for (const [key, date] of Object.entries(seen || {})) {
+    if (date >= cutoff) nextSeen[key] = date;
+  }
+  for (const c of cars) nextSeen[carKey(c)] = toIsoDate(c.yardDate) || today;
+  state.seenVehicles = nextSeen;
   state.lastRunDate = today;
   state.lastCount = cars.length;
   saveState(state);
@@ -382,7 +421,11 @@ function sendTelegram(msg) {
       newToday.forEach(c => console.log(`  ${c.year} ${c.make} ${c.model} [${c.yardDate}] ${c.yard}`));
     }
   } else {
-    await sendTelegram(msg);
+    const result = await sendTelegram(msg);
+    if (!result.ok) {
+      console.error(`Telegram send FAILED (status ${result.status}): ${result.body}`);
+      process.exit(1);
+    }
     console.log('Sent to Telegram.');
   }
 })();
