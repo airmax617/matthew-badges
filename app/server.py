@@ -109,74 +109,80 @@ def shrink_image(image_b64, mime_type='image/jpeg', max_px=1024, quality=82):
 
 
 ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
-ANTHROPIC_MODEL   = "claude-haiku-4-5-20251001"
+ANTHROPIC_MODEL   = "claude-haiku-4-5-20251001"   # Ideas tab
+IDENTIFY_MODEL    = "claude-opus-5-5"             # badge identification (accuracy matters here)
 
 
 def get_anthropic_key():
     try:
         with open(OPENCLAW_CONFIG) as f:
-            return json.load(f)["env"]["ANTHROPIC_API_KEY"]
+            env = json.load(f)["env"]
+        key = env.get("vars", {}).get("ANTHROPIC_API_KEY") or env.get("ANTHROPIC_API_KEY")
+        if key:
+            return key
     except Exception:
-        return os.environ.get("ANTHROPIC_API_KEY", "")
+        pass
+    return os.environ.get("ANTHROPIC_API_KEY", "")
+
+
+IDENTIFY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "visible_clues": {"type": "string"},
+        "make": {"type": "string"}, "model": {"type": "string"}, "years": {"type": "string"},
+        "badge_name": {"type": "string"}, "description": {"type": "string"}, "fun_fact": {"type": "string"},
+        "rarity": {"type": "string", "enum": ["common", "uncommon", "rare", "very_rare"]},
+        "value_estimate": {"type": "string"},
+        "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+    },
+    "required": ["visible_clues", "make", "model", "years", "badge_name", "description", "fun_fact",
+                 "rarity", "value_estimate", "confidence"],
+    "additionalProperties": False,
+}
+IDENTIFY_PROMPT = """You are an expert in automotive badges, emblems, hood ornaments, wheel center caps and script nameplates.
+This photo shows one piece from a young boy's car badge collection. Identify it as precisely as you can.
+
+Work from what is actually visible: read any letters, numbers or script exactly, and use the logo shape, colors,
+finish and mounting pins or clips. Prefer a specific model and year range only when the piece supports it;
+otherwise use 'All Models' and the years the logo design was in use. If you can't tell, say so and use low confidence.
+Rarity is about how hard this piece is to find as a used part (rare = old, discontinued or exotic brands).
+If it is not a car badge at all, set make to "Unknown".
+Write the description (2-3 sentences) and fun_fact so they are exciting, accurate and easy for a 7-year-old."""
 
 
 def identify_badge(image_b64, mime_type="image/jpeg"):
-    image_b64, mime_type = shrink_image(image_b64, mime_type, max_px=1024)
-
-    prompt = """You are a world-class expert on car badges, emblems, hood ornaments, wheel caps, and automotive logos.
-
-A kid is showing you a photo of a car badge they found. Identify what you actually see — look carefully at the real shape, text, logo, colors, and chrome details in the photo. Make your best guess even if the photo is blurry or partial.
-
-Reply with ONLY a JSON object using these exact keys (no markdown, no code blocks, no explanation):
-{"make": "<actual car brand you see>", "model": "<specific model or All Models>", "years": "<year range>", "badge_name": "<what this badge is called>", "description": "<exciting kid-friendly description of what you see>", "fun_fact": "<cool fact about this car or badge>", "rarity": "<common|uncommon|rare|very_rare>", "value_estimate": "<dollar range>", "confidence": "<high|medium|low>"}
-
-Rarity: "common" = mass-produced millions, "uncommon" = specific model/older variants, "rare" = pre-1970s/limited/European exotics, "very_rare" = pre-war/prototype/ultra-limited.
-Keep description and fun_fact exciting and kid-friendly (8-12 year old audience).
-If genuinely not a car badge, set make to "Unknown"."""
-
-    payload = json.dumps({
-        "model": ANTHROPIC_MODEL,
-        "max_tokens": 500,
-        "messages": [{
-            "role": "user",
-            "content": [
-                {"type": "image", "source": {
-                    "type": "base64",
-                    "media_type": mime_type,
-                    "data": image_b64
-                }},
-                {"type": "text", "text": prompt}
-            ]
-        }]
-    }).encode()
-
-    req = urllib.request.Request(
-        ANTHROPIC_API_URL,
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "x-api-key": get_anthropic_key(),
-            "anthropic-version": "2023-06-01"
-        }
-    )
-
+    image_b64, mime_type = shrink_image(image_b64, mime_type, max_px=1568)
+    fail = {"make": "Unknown", "badge_name": "Unidentified Badge",
+            "description": "Couldn't identify this one — try a clearer photo!", "confidence": "low"}
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            resp = json.loads(r.read())
-            content = resp["content"][0]["text"].strip()
-            if "```" in content:
-                content = content.split("```")[1]
-                if content.startswith("json"):
-                    content = content[4:]
-                content = content.strip()
-            start = content.find("{")
-            end   = content.rfind("}") + 1
-            if start >= 0 and end > start:
-                content = content[start:end]
-            return json.loads(content)
-    except Exception as e:
-        return {"error": str(e), "make": "Unknown", "badge_name": "Unidentified Badge",
-                "description": "Couldn't identify this one — try a clearer photo!", "confidence": "low"}
+        import anthropic
+    except ImportError:
+        return {**fail, "error": "anthropic package not installed for this Python"}
+    client = anthropic.Anthropic(api_key=get_anthropic_key(), max_retries=2)
+    try:
+        resp = client.beta.messages.create(
+            model=IDENTIFY_MODEL,
+            max_tokens=16000,
+            betas=["server-side-fallback-2026-07-01"],
+            extra_body={"fallbacks": "default",
+                        "output_config": {"effort": "high",
+                                          "format": {"type": "json_schema", "schema": IDENTIFY_SCHEMA}}},
+            messages=[{"role": "user", "content": [
+                {"type": "image", "source": {"type": "base64", "media_type": mime_type, "data": image_b64}},
+                {"type": "text", "text": IDENTIFY_PROMPT}]}],
+        )
+    except anthropic.APIStatusError as e:
+        return {**fail, "error": f"API {e.status_code}: {e.message}"}
+    except anthropic.APIConnectionError as e:
+        return {**fail, "error": f"connection error: {e}"}
+    if resp.stop_reason == "refusal":
+        return {**fail, "error": "the model declined this image"}
+    text = next((b.text for b in resp.content if b.type == "text"), None)
+    if text is None or resp.stop_reason == "max_tokens":
+        return {**fail, "error": f"no answer ({resp.stop_reason})"}
+    out = json.loads(text)
+    out.pop("visible_clues", None)
+    return out
 
 
 def generate_ideas(owned_makes):
