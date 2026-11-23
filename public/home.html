@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matty's Badge Hunt</title>
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://matthewspivak.com/">
+<meta property="og:title" content="Matty's Badge Hunt">
+<meta property="og:description" content="Matthew collects the chrome off cars. Here's his story, his most-wanted list, and how to send him a badge.">
+<meta property="og:image" content="https://matthewspivak.com/media/wall-2026-b.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="/media/icon-192.png">
+<link rel="apple-touch-icon" href="/media/icon-180.png">
+<meta name="description" content="Matthew has been collecting car badges since he was little. Hundreds of them now. Here's his story, his most-wanted list, and how to send him one.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one long drive. Dark "garage" bands (hero, badge strip, vault) bracket a bright story told year by year,
+   like the walls he built: pine board, then black shelves. Single committed look; colors set explicitly. */
+:root {
+  color-scheme: light;
+  --paper: #f2f5f6;        /* showroom white, cool */
+  --wall: #cfe6e8;         /* the aqua of his bedroom wall */
+  --ink: #14181d;          /* tire black */
+  --ink-2: #48525c;        /* body grey */
+  --chrome: #a9b3bc;
+  --pine: #d8ac72;         /* his first laser-cut collection board */
+  --red: #d42a33;          /* "RACE CAR PARKING ONLY" */
+  --garage: #101215;
+  --garage-2: #1b1f24;
+  --on-dark: #eef1f3;
+  --on-dark-2: #9aa5af;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --gut: max(16px, env(safe-area-inset-left, 0px));
+  --gut-r: max(16px, env(safe-area-inset-right, 0px));
+  --max: 1180px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--garage); }
+img, video { max-width: 100%; display: block; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--gut); padding-right: var(--gut-r); }
+h1, h2, h3 { font-family: var(--display); font-weight: 900; line-height: .92; letter-spacing: .005em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+h2 { font-size: clamp(2.6rem, 7vw, 5rem); }
+h3 { font-size: clamp(1.6rem, 3vw, 2.1rem); font-weight: 800; }
+p { margin: 0; max-width: 62ch; }
+.eyebrow { font: 600 .78rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--red); }
+.lede { font-size: clamp(1.1rem, 2vw, 1.3rem); color: var(--ink-2); }
+
+/* nav */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(16,18,21,.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); color: var(--on-dark); }
+.nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 58px; }
+.brand { font: 900 1.35rem/1 var(--display); text-transform: uppercase; text-decoration: none; letter-spacing: .02em; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+.brand i { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, var(--chrome) 45%, #4b555f 100%); box-shadow: inset 0 0 0 2px rgba(255,255,255,.35); }
+.nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; font-weight: 600; font-size: .95rem; }
+.nav ul a { text-decoration: none; color: var(--on-dark-2); }
+.nav ul a:hover { color: var(--on-dark); }
+.nav .cta-sm { background: var(--red); color: #fff; padding: 8px 14px; border-radius: 999px; text-decoration: none; font-weight: 700; font-size: .9rem; white-space: nowrap; }
+@media (max-width: 760px) { .nav ul { display: none; } }
+
+/* hero */
+.hero { position: relative; background: var(--garage); color: var(--on-dark); overflow: hidden; }
+.hero video, .hero .poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .55; }
+.hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(16,18,21,.2) 0%, rgba(16,18,21,.35) 45%, var(--garage) 100%), linear-gradient(90deg, rgba(16,18,21,.85) 0%, rgba(16,18,21,0) 70%); }
+.hero .wrap { position: relative; z-index: 1; padding-block: clamp(80px, 14vw, 150px) clamp(48px, 7vw, 80px); display: grid; gap: 22px; }
+.hero h1 { font-size: clamp(3.4rem, 11vw, 8.6rem); max-width: 11ch; }
+.hero h1 em { font-style: normal; color: transparent; -webkit-text-stroke: 2px var(--on-dark); }
+.hero .lede { color: #c9d1d8; max-width: 46ch; }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; padding: 14px 22px; border-radius: 999px; font: 700 1rem/1 var(--body); text-decoration: none; border: 2px solid transparent; cursor: pointer; transition: transform .15s ease, background .15s ease; }
+.btn:hover { transform: translateY(-2px); }
+.btn-red { background: var(--red); color: #fff; }
+.btn-ghost { border-color: rgba(238,241,243,.4); color: var(--on-dark); background: transparent; }
+.btn-ink { background: var(--ink); color: #fff; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 18px; font: 600 .82rem/1.3 var(--mono); color: var(--on-dark-2); text-transform: uppercase; letter-spacing: .08em; }
+.hero-meta b { display: block; font: 900 2.4rem/1 var(--display); color: var(--on-dark); letter-spacing: 0; }
+
+/* rolling badge strip */
+.strip { background: var(--garage); padding-block: 8px 34px; overflow: hidden; }
+.track { display: flex; gap: 14px; width: max-content; animation: roll 70s linear infinite; }
+.strip:hover .track { animation-play-state: paused; }
+.chip { width: 120px; flex: none; text-align: center; color: var(--on-dark-2); font: 500 .7rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+.chip img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 8px; box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 10px 24px rgba(0,0,0,.5); }
+@keyframes roll { to { transform: translateX(-50%); } }
+
+/* in his words */
+.words { background: var(--wall); }
+.words .wrap { padding-block: clamp(64px, 9vw, 110px); display: grid; grid-template-columns: 1.15fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+.words .vid { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 30px 60px -30px rgba(20,24,29,.55); background: var(--ink); aspect-ratio: 16/9; }
+.words video { width: 100%; height: 100%; object-fit: cover; }
+.play { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(20,24,29,.25); border: 0; cursor: pointer; color: #fff; font: 700 1rem var(--body); }
+.play span { display: inline-flex; align-items: center; gap: 10px; background: var(--red); padding: 14px 22px; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+.quote { font: 800 clamp(2rem, 4.4vw, 3.3rem)/1 var(--display); text-transform: uppercase; text-wrap: balance; }
+.quote::before { content: "\201C"; color: var(--red); }
+.quote::after { content: "\201D"; color: var(--red); }
+.words .who { font: 600 .85rem/1.4 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--ink-2); margin-top: 16px; }
+.words .col { display: grid; gap: 18px; }
+@media (max-width: 860px) { .words .wrap { grid-template-columns: 1fr; } }
+
+/* story */
+.story .wrap { padding-block: clamp(70px, 10vw, 120px) 40px; }
+.story-head { display: grid; gap: 16px; margin-bottom: clamp(40px, 6vw, 70px); }
+.chapter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(24px, 5vw, 72px); align-items: center; padding-block: clamp(30px, 5vw, 56px); border-top: 1px solid #d6dde2; }
+.chapter:nth-child(even) .pics { order: -1; }
+.chapter .yr { font: 900 clamp(4.5rem, 12vw, 9rem)/.8 var(--display); color: transparent; -webkit-text-stroke: 2px var(--ink); opacity: .9; }
+.chapter .txt { display: grid; gap: 14px; min-width: 0; }
+.chapter .txt p { color: var(--ink-2); }
+.pics { position: relative; min-width: 0; }
+.pics img { border-radius: 14px; width: 100%; object-fit: cover; box-shadow: 0 26px 50px -28px rgba(20,24,29,.6); }
+.pics .inset { position: absolute; width: 42%; right: -4%; bottom: -10%; border: 6px solid var(--paper); border-radius: 16px; }
+.chapter:nth-child(even) .pics .inset { right: auto; left: -4%; }
+.tag { display: inline-block; font: 600 .72rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; background: var(--ink); color: #fff; padding: 6px 9px; border-radius: 6px; justify-self: start; }
+.tag.pine { background: var(--pine); color: var(--ink); }
+@media (max-width: 820px) {
+  .chapter { grid-template-columns: 1fr; }
+  .chapter:nth-child(even) .pics { order: 0; }
+  .pics .inset { width: 38%; right: 8px; bottom: -18px; }
+  .chapter:nth-child(even) .pics .inset { left: 8px; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pics > img:first-child { animation: drift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+    .pics .inset { animation: lift linear both; animation-timeline: view(); animation-range: entry 0% exit 100%; }
+  }
+}
+@keyframes drift { from { transform: translateY(28px) scale(.98); } to { transform: translateY(-28px) scale(1); } }
+@keyframes lift { from { transform: translateY(40px) rotate(2deg); } to { transform: translateY(-30px) rotate(-1.5deg); } }
+
+/* the hunt */
+.hunt { background: var(--ink); color: var(--on-dark); }
+.hunt .wrap { padding-block: clamp(70px, 10vw, 120px); display: grid; gap: 40px; }
+.hunt .lede { color: var(--on-dark-2); }
+.ways { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.way { display: grid; gap: 12px; align-content: start; }
+.way img { border-radius: 12px; aspect-ratio: 4/5; object-fit: cover; width: 100%; }
+.way h3 { font-size: 1.6rem; }
+.way p { color: var(--on-dark-2); font-size: .98rem; }
+@media (max-width: 980px) { .ways { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .ways { grid-template-columns: 1fr; } }
+
+.rules { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: clamp(24px, 5vw, 60px); align-items: center; margin-top: 30px; padding-top: 50px; border-top: 1px solid #2c3238; }
+.rules-pic img { border-radius: 14px; aspect-ratio: 4/5; object-fit: cover; width: 100%; max-width: 420px; }
+.rules-txt { display: grid; gap: 16px; min-width: 0; }
+.rules-h { font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 900; }
+.rulelist { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 22px; counter-reset: r; }
+.rulelist li { display: grid; grid-template-columns: 64px 1fr; gap: 16px; counter-increment: r; }
+.rulelist li::before { content: "#" counter(r); font: 900 2.6rem/1 var(--display); color: var(--pine); }
+.rulelist b { display: block; font-size: 1.15rem; color: var(--on-dark); margin-bottom: 4px; }
+.rulelist span { color: var(--on-dark-2); }
+@media (max-width: 820px) { .rules { grid-template-columns: 1fr; } }
+
+/* most wanted */
+.wanted .wrap { padding-block: clamp(70px, 10vw, 120px); display: grid; gap: 36px; }
+.plates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.plate { min-width: 0; background: #fbfcfd; border: 3px solid var(--ink); border-radius: 14px; padding: 14px 16px 16px; display: grid; gap: 8px; box-shadow: 0 6px 0 var(--ink); position: relative; }
+.plate::before, .plate::after { content: ""; position: absolute; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--chrome); box-shadow: inset 0 0 0 2px #6f7a84; }
+.plate::before { left: 12px; } .plate::after { right: 12px; }
+.plate .st { font: 600 .68rem/1 var(--mono); letter-spacing: .16em; text-transform: uppercase; text-align: center; color: var(--red); }
+.plate .nm { font: 900 clamp(1.45rem, 3.6vw, 2.7rem)/1 var(--display); overflow-wrap: anywhere; text-transform: uppercase; text-align: center; letter-spacing: .04em; }
+.plate .ln { font: 500 .72rem/1.3 var(--mono); text-align: center; color: var(--ink-2); text-transform: uppercase; letter-spacing: .08em; }
+.also { color: var(--ink-2); }
+.also b { color: var(--ink); }
+@media (max-width: 900px) { .plates { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* send */
+.send { background: var(--pine); }
+.send .wrap { padding-block: clamp(70px, 10vw, 120px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(30px, 5vw, 70px); align-items: start; }
+.send .lede { color: #3b2f20; }
+.steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 18px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; counter-increment: s; }
+.steps li::before { content: counter(s); width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font: 900 1.4rem var(--display); }
+.steps b { display: block; font-size: 1.05rem; }
+.steps span { color: #3b2f20; }
+form.offer { background: var(--paper); border-radius: 20px; padding: clamp(20px, 3vw, 32px); display: grid; gap: 14px; box-shadow: 0 30px 60px -30px rgba(60,40,10,.6); }
+.offer h3 { font-size: 2rem; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+.fld { display: grid; gap: 6px; min-width: 0; }
+.fld label { font: 600 .74rem/1 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--ink-2); }
+.fld input, .fld textarea, .fld select { width: 100%; font: 500 1rem var(--body); color: var(--ink); background: #fff; border: 2px solid #d3dbe0; border-radius: 10px; padding: 11px 12px; }
+.fld input:focus, .fld textarea:focus, .fld select:focus { outline: none; border-color: var(--ink); }
+.fld textarea { min-height: 96px; resize: vertical; }
+.mail { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font: 600 .95rem var(--mono); }
+.mail code { user-select: all; background: #fff; border: 2px dashed #c7cfd5; border-radius: 8px; padding: 6px 10px; font: inherit; }
+.copy { background: none; border: 2px solid var(--ink); border-radius: 8px; padding: 6px 10px; font: 700 .85rem var(--body); cursor: pointer; color: var(--ink); }
+.note { font-size: .9rem; color: var(--ink-2); }
+@media (max-width: 900px) { .send .wrap { grid-template-columns: 1fr; } }
+
+/* vault teaser */
+.vault { background: var(--garage); color: var(--on-dark); }
+.vault .wrap { padding-block: clamp(70px, 10vw, 120px); display: grid; gap: 34px; }
+.vault-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; }
+.vault .lede { color: var(--on-dark-2); }
+.counts { display: flex; gap: 34px; flex-wrap: wrap; font: 600 .78rem/1.3 var(--mono); text-transform: uppercase; letter-spacing: .1em; color: var(--on-dark-2); }
+.counts b { display: block; font: 900 3rem/1 var(--display); color: var(--on-dark); letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.vgrid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.vcard { background: var(--garage-2); border-radius: 14px; overflow: hidden; display: grid; }
+.vcard img { aspect-ratio: 1; width: 100%; object-fit: cover; }
+.vcard div { padding: 10px 12px 12px; display: grid; gap: 3px; min-width: 0; }
+.vcard b { font: 800 1.05rem/1.05 var(--display); text-transform: uppercase; overflow-wrap: anywhere; }
+.vcard small { font: 500 .68rem/1.3 var(--mono); color: var(--on-dark-2); text-transform: uppercase; letter-spacing: .06em; }
+.vcard .r { color: var(--pine); }
+@media (max-width: 980px) { .vgrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .vgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+footer { background: var(--garage); color: var(--on-dark-2); border-top: 1px solid #262b31; }
+footer .wrap { padding-block: 28px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; font-size: .9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; }
+  .track .dup { display: none; }
+  html { scroll-behavior: auto; }
+  .btn:hover { transform: none; }
+}
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="#top"><i aria-hidden="true"></i>Matty's Badge Hunt</a>
+    <ul>
+      <li><a href="#story">His story</a></li>
+      <li><a href="#hunt">The hunt</a></li>
+      <li><a href="#wanted">Most wanted</a></li>
+      <li><a href="#vault">The vault</a></li>
+    </ul>
+    <a class="cta-sm" href="#send">Send a badge</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <img class="poster" src="/media/wall-loop.jpg" alt="" aria-hidden="true">
+  <video id="heroVid" autoplay muted loop playsinline preload="metadata" poster="/media/wall-loop.jpg" aria-hidden="true">
+    <source src="/media/wall-loop.mp4" type="video/mp4">
+  </video>
+  <div class="wrap">
+    <span class="eyebrow">Car badge collector · since 2022</span>
+    <h1>Matty collects <em>the chrome</em> off cars.</h1>
+    <p class="lede">Hood ornaments, grille badges, hubcaps, trunk letters. Matthew has been hunting them since he could carry one, and his wall now holds hundreds. This is his story, and how you can help him find the next one.</p>
+    <div class="btns">
+      <a class="btn btn-red" href="#send">I have a badge for him</a>
+      <a class="btn btn-ghost" href="#words">▶ Watch Matty</a>
+    </div>
+    <div class="hero-meta">
+      <span><b id="statBadges">80</b>catalogued so far</span>
+      <span><b id="statMakes">35</b>car makes</span>
+      <span><b>4</b>dream badges to go</span>
+    </div>
+  </div>
+</header>
+
+<section class="strip" aria-label="A few badges from Matty's collection">
+  <div class="track" id="track"></div>
+</section>
+
+<section class="words" id="words">
+  <div class="wrap">
+    <div class="vid">
+      <video id="intro" preload="none" playsinline poster="/media/matthew-intro.jpg">
+        <source src="/media/matthew-intro.mp4" type="video/mp4">
+      </video>
+      <button class="play" id="playIntro" type="button" aria-label="Play Matty's video with sound"><span>▶ Play with sound</span></button>
+    </div>
+    <div class="col">
+      <span class="eyebrow">In his own words</span>
+      <p class="quote">If you get those car badges, can I have them, please?</p>
+      <p class="lede">Matty made this video himself, with a little editing help. He walks through his favorites, from a BMW roundel to a Ford Mustang pony, and names the four badges he wants most.</p>
+      <p class="who">Matthew · October 2025</p>
+    </div>
+  </div>
+</section>
+
+<section class="story" id="story">
+  <div class="wrap">
+    <div class="story-head">
+      <span class="eyebrow">His story</span>
+      <h2>From two hubcaps to a whole wall</h2>
+      <p class="lede">Every collection starts somewhere. His started in the driveway.</p>
+    </div>
+
+    <div class="chapters">
+      <article class="chapter">
+        <div class="txt">
+          <div class="yr">2022</div>
+          <span class="tag">Fall · the first ones</span>
+          <h3>Two hubcaps in the driveway</h3>
+          <p>The first two pieces were plain wheel center caps. He held them up like trophies. From then on, every parking lot was a treasure hunt, and he could name a car from its badge before he could read the word on it.</p>
+        </div>
+        <div class="pics"><img src="/media/first-hubcaps.jpg" alt="Matty in a green hoodie holding up two wheel center caps in the driveway" width="1000" height="1250"></div>
+      </article>
+
+      <article class="chapter">
+        <div class="txt">
+          <div class="yr">2023</div>
+          <span class="tag pine">Winter · the first wall</span>
+          <h3>A wall of his own</h3>
+          <p>Badges needed a home, so his bedroom got one: a pine display with a cut-out spot for every logo and a sign that reads <em>Matthew's Collection</em>. Big emblems hung on hooks along the top. Within a year, it was full.</p>
+        </div>
+        <div class="pics">
+          <img src="/media/wall-wide-2023.jpg" alt="Pine wall display packed with car emblems, with a Matthew's Collection sign" width="1400" height="1050">
+          <img class="inset" src="/media/wall-2023.jpg" alt="Matty grinning next to his wall, holding a Nissan badge" width="1400" height="1050">
+        </div>
+      </article>
+
+      <article class="chapter">
+        <div class="txt">
+          <div class="yr">2023</div>
+          <span class="tag">December · out of room</span>
+          <h3>Then it covered the bed</h3>
+          <p>By December the wall couldn't hold them, so they went everywhere. Mercedes stars, Audi rings, Ford ovals and Lexus Ls covered the whole bed, sorted and lined up by Matty himself.</p>
+        </div>
+        <div class="pics"><img src="/media/bed-full.jpg" alt="Matty sitting beside his bed, which is completely covered in rows of car badges" width="1400" height="1050"></div>
+      </article>
+
+      <article class="chapter">
+        <div class="txt">
+          <div class="yr">2024</div>
+          <span class="tag">Spring · the shelves</span>
+          <h3>He needed a garage, so to speak</h3>
+          <p>The collection moved to rows of black shelves. Badges stood up by make, BMW roundels in one row and script names like <em>Regal</em> and <em>Thunderbird</em> in another. Whole grilles started coming home too.</p>
+        </div>
+        <div class="pics">
+          <img src="/media/shelves-2024.jpg" alt="Three black bookcases full of car badges sorted by make" width="1400" height="1050">
+          <img class="inset" src="/media/arms-up.jpg" alt="Matty with his arms up holding two badges" width="1000" height="1250">
+        </div>
+      </article>
+
+      <article class="chapter">
+        <div class="txt">
+          <div class="yr">2025</div>
+          <span class="tag">All year · three walls</span>
+          <h3>Three walls, floor to ceiling</h3>
+          <p>Kia, Hyundai, GMC, Econoline, Lincoln, Cadillac. The shelves wrapped around the room. This was the year he filmed his own video tour and started asking for the dream badges by name.</p>
+        </div>
+        <div class="pics"><img src="/media/shelves-2025.jpg" alt="Long black shelves wrapping a room, covered in hundreds of car badges" width="1400" height="1050"></div>
+      </article>
+
+      <article class="chapter">
+        <div class="txt">
+          <div class="yr">2026</div>
+          <span class="tag pine">Now · taking it on the road</span>
+          <h3>His favorites go to the car shows</h3>
+          <p>Today the wall is the size of a room. For auto shows, Matty built a travel board of his favorites: Porsche, Maserati, BMW, Renault and the big Isuzu across the top. He carries it past supercars he's still hoping to get a badge from.</p>
+        </div>
+        <div class="pics">
+          <img src="/media/wall-2026-b.jpg" alt="Matty sitting in front of his huge badge wall holding a small board of favorites" width="1400" height="1050">
+          <img class="inset" src="/media/auto-show.jpg" alt="Matty at an auto show holding his favorites board in front of a red supercar" width="1000" height="1250">
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="hunt" id="hunt">
+  <div class="wrap">
+    <div class="story-head">
+      <span class="eyebrow">The hunt</span>
+      <h2>Where the badges come from</h2>
+      <p class="lede">None of them came from a store. Every badge has a story about where it was found.</p>
+    </div>
+    <div class="ways">
+      <div class="way">
+        <img src="/media/grille-haul.jpg" alt="Matty standing over three car grilles and a hubcap laid out on pavement" width="1400" height="1050">
+        <h3>U-Pull yards</h3>
+        <p>Cars heading for the crusher still wear their badges. A trip to pull one is a special-occasion treat, saved for birthdays and big wins.</p>
+      </div>
+      <div class="way">
+        <img src="/media/genesis-wings.jpg" alt="A hand holding a winged Genesis badge outside a dealership" width="1000" height="1250">
+        <h3>Dealers &amp; service shops</h3>
+        <p>Parts departments swap out damaged emblems all the time. Matty walks up, explains his collection, and asks. Plenty of people have said yes.</p>
+      </div>
+      <div class="way">
+        <img src="/media/porsche-gift.jpg" alt="Matty at a Porsche dealership holding a gift from the team" width="1000" height="1250">
+        <h3>Kind strangers</h3>
+        <p>At a Porsche dealer, the team talked cars with Matty and sent him home with several hubcaps. At a Harley-Davidson shop, a detailer heard Matty ask and ran to get two badges from his own collection. We wrote to Porsche's leadership and to the Harley shop's owner to thank them, and the detailer was named employee of the month.</p>
+      </div>
+      <div class="way">
+        <img src="/media/honda-show.jpg" alt="Matty at an auto show standing next to a giant Honda logo" width="1000" height="1250">
+        <h3>Auto shows</h3>
+        <p>Where he studies the badges he doesn't have yet, and makes his list for next time.</p>
+      </div>
+    </div>
+
+    <div class="rules">
+      <div class="rules-pic">
+        <img src="/media/roadside-grille.jpg" alt="Matty on a roadside next to a broken grille he found" width="1000" height="1250">
+      </div>
+      <div class="rules-txt">
+        <span class="eyebrow" style="color:var(--pine)">House rules</span>
+        <h3 class="rules-h">The rules of the hunt</h3>
+        <ol class="rulelist">
+          <li><div><b>If we pull over, it comes with us.</b><span>Stop for a hubcap or a car part on the roadside and we take it, even if it's cracked or rusty. A badge hunt also cleans up the road.</span></div></li>
+          <li><div><b>U-Pull is for special occasions.</b><span>Dad takes him to the junkyard as a treat. Most badges have to be found some other way.</span></div></li>
+          <li><div><b>Matty does the asking.</b><span>When we visit a business, Matty asks for himself and explains his project. Nobody asks for him.</span></div></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wanted" id="wanted">
+  <div class="wrap">
+    <div class="story-head">
+      <span class="eyebrow">Most wanted</span>
+      <h2>The four he's still hunting</h2>
+      <p class="lede">These are the badges he named in his video. A junkyard almost never gets these cars, so they're the hardest to find.</p>
+    </div>
+    <div class="plates">
+      <div class="plate"><span class="st">Wanted</span><span class="nm">Ferrari</span><span class="ln">Prancing horse · any size</span></div>
+      <div class="plate"><span class="st">Wanted</span><span class="nm">Lamborghini</span><span class="ln">Raging bull shield</span></div>
+      <div class="plate"><span class="st">Wanted</span><span class="nm">Aston Martin</span><span class="ln">The wings</span></div>
+      <div class="plate"><span class="st">Wanted</span><span class="nm">Koenigsegg</span><span class="ln">The shield</span></div>
+    </div>
+    <p class="also">Also always welcome: <b>Bugatti, McLaren, Rolls-Royce, Bentley</b>, and old script badges from cars nobody makes anymore. Duplicates of common badges are fine too. He trades them with friends.</p>
+  </div>
+</section>
+
+<section class="send" id="send">
+  <div class="wrap">
+    <div class="col" style="display:grid;gap:18px">
+      <span class="eyebrow" style="color:var(--ink)">Help the hunt</span>
+      <h2>Have a badge for Matty?</h2>
+      <p class="lede">Maybe one is sitting in your garage, your shop, or a parts drawer. We're happy to pay a fair price for it, or to cover shipping if you'd like to give it to him.</p>
+      <ol class="steps">
+        <li><div><b>Tell us what you have</b><span>A quick note and a photo is perfect. Any condition is fine.</span></div></li>
+        <li><div><b>We'll reply with a fair offer</b><span>A reasonable price plus shipping. We're a family, not a dealer.</span></div></li>
+        <li><div><b>It goes on the wall</b><span>Matty opens it, finds it a spot, and sends you a photo.</span></div></li>
+      </ol>
+    </div>
+    <form class="offer" id="offer" novalidate>
+      <h3>Offer a badge</h3>
+      <div class="row2">
+        <div class="fld"><label for="f-name">Your name</label><input id="f-name" name="name" autocomplete="name" placeholder="Pat"></div>
+        <div class="fld"><label for="f-email">Your email</label><input id="f-email" name="email" type="email" autocomplete="email" placeholder="pat@example.com"></div>
+      </div>
+      <div class="row2">
+        <div class="fld"><label for="f-make">Car make</label><input id="f-make" name="make" placeholder="Ferrari"></div>
+        <div class="fld"><label for="f-deal">You'd like to</label>
+          <select id="f-deal" name="deal"><option>Sell it at a fair price</option><option>Give it to Matty</option><option>Not sure yet</option></select></div>
+      </div>
+      <div class="fld"><label for="f-msg">About the badge</label><textarea id="f-msg" name="msg" placeholder="Front hood badge from a 2008 F430, a little scuffed. Asking $40."></textarea></div>
+      <button class="btn btn-ink" type="submit">Write the email ➜</button>
+      <div class="mail">or email us directly: <code id="addr">spivak.matt@gmail.com</code><button class="copy" id="copy" type="button">Copy</button></div>
+      <p class="note" id="formNote">This opens your email app with your note filled in. Please attach a photo of the badge.</p>
+    </form>
+  </div>
+</section>
+
+<section class="vault" id="vault">
+  <div class="wrap">
+    <div class="vault-top">
+      <div style="display:grid;gap:14px">
+        <span class="eyebrow" style="color:var(--pine)">The vault</span>
+        <h2>Every badge, catalogued</h2>
+        <p class="lede">Matty photographs each badge, and the vault records the make, the years and a fun fact. He's still working through the wall.</p>
+      </div>
+      <div class="counts"><span><b id="vCount">80</b>in the vault</span><span><b id="vMakes">35</b>makes</span><span><b id="vRare">7</b>rare finds</span></div>
+    </div>
+    <div class="vgrid" id="vgrid"></div>
+    <div class="btns"><a class="btn btn-red" href="/vault">Open the full vault ➜</a></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Matty's Badge Hunt · made with his dad</span>
+    <span>Questions or a badge to offer: <span style="user-select:all">spivak.matt@gmail.com</span></span>
+  </div>
+</footer>
+
+<script>
+const BADGES = [{"id": "06ceaed6", "make": "Ford", "name": "Thunderbolt / Powertrain Emblem", "years": "1962-1965", "rarity": "rare"}, {"id": "1def95ba", "make": "Datsun", "name": "Datsun 'DS' Grille Badge", "years": "1965-1973", "rarity": "rare"}, {"id": "61583cc3", "make": "Land Rover", "name": "Series II Fender Badge", "years": "1958-1971", "rarity": "rare"}, {"id": "8f6efcbf", "make": "Jaguar", "name": "Jaguar Growler Wheel Center Cap / Horn Button Badge", "years": "1950s-1980s", "rarity": "rare"}, {"id": "706cd205", "make": "Jaguar", "name": "E-TYPE Fender/Boot Script Badge", "years": "1961-1975", "rarity": "rare"}, {"id": "c27a6ed1", "make": "Porsche", "name": "Porsche Crest Wheel Center Cap", "years": "1952-Present", "rarity": "uncommon"}, {"id": "84468f96", "make": "Ford", "name": "Running Horse Grille Emblem", "years": "1964-1973", "rarity": "uncommon"}, {"id": "8cf630c0", "make": "Maserati", "name": "Trident Emblem", "years": "1926-present", "rarity": "uncommon"}, {"id": "f873f22b", "make": "Chrysler", "name": "Chrysler Pentastar Wreath Emblem", "years": "1955-1975", "rarity": "uncommon"}, {"id": "2fa79d82", "make": "Harley-Davidson", "name": "Harley-Davidson Number One Skull Derby Cover", "years": "1990s-present", "rarity": "uncommon"}, {"id": "e9e46a76", "make": "MINI", "name": "MINI Wings Hood/Boot Emblem", "years": "2001-2006", "rarity": "uncommon"}, {"id": "34f019db", "make": "Saab", "name": "SAAB Wordmark Trunk/Body Emblem", "years": "1980s-2011", "rarity": "uncommon"}, {"id": "a90aba01", "make": "Saab", "name": "Saab Griffin Roundel", "years": "1984-2011", "rarity": "uncommon"}, {"id": "ac32cdbd", "make": "Volvo", "name": "Volvo 144 Model Badge", "years": "1966-1974", "rarity": "uncommon"}, {"id": "f85a3efa", "make": "Saab-Scania", "name": "Saab-Scania Combined Griffin Emblem", "years": "1984-2000", "rarity": "uncommon"}, {"id": "c5dd3525", "make": "Jaguar", "name": "Leaping Jaguar Hood Ornament", "years": "1945-present", "rarity": "uncommon"}, {"id": "27b7ce37", "make": "Chevrolet", "name": "Chevrolet Bowtie or Dual Chevron Fender Badge", "years": "1957-1970s", "rarity": "uncommon"}, {"id": "cd7c322b", "make": "Chevrolet", "name": "Chevrolet Double Arrow/Chevron Badge", "years": "1960s-1970s", "rarity": "uncommon"}, {"id": "5129686c", "make": "Hummer", "name": "Hummer H2/H3 Grille Badge", "years": "2003-2010", "rarity": "uncommon"}, {"id": "e9d49f1e", "make": "Lancia", "name": "Lancia Logo Emblem", "years": "1960s-1980s", "rarity": "uncommon"}, {"id": "fcc97621", "make": "Renault", "name": "Renault Diamond Badge", "years": "1970s-1980s", "rarity": "uncommon"}, {"id": "be030577", "make": "Chevrolet", "name": "Chevrolet Script Emblem", "years": "1960s-1970s", "rarity": "uncommon"}];
+const EMAIL = "spivak.matt@gmail.com";
+
+// rolling strip (duplicated once so the loop is seamless)
+const track = document.getElementById("track");
+const chip = (b, dup) => `<div class="chip${dup ? " dup" : ""}"${dup ? ' aria-hidden="true"' : ""}><img src="/media/badges/${b.id}.jpg" alt="${dup ? "" : b.make + " " + b.name}" width="120" height="120">${b.make}</div>`;
+track.innerHTML = BADGES.map((b) => chip(b, false)).join("") + BADGES.map((b) => chip(b, true)).join("");
+
+// vault teaser: rarest first
+const vgrid = document.getElementById("vgrid");
+vgrid.innerHTML = BADGES.slice(0, 12).map((b) => `<div class="vcard"><img src="/media/badges/${b.id}.jpg" alt="${b.make} ${b.name}" loading="lazy" width="360" height="360"><div><b>${b.make}</b><small>${b.name}</small><small class="r">${b.rarity}${b.years ? " · " + b.years : ""}</small></div></div>`).join("");
+
+// live counts when served from matthewspivak.com
+fetch("/api/badges").then((r) => (r.ok ? r.json() : null)).then((d) => {
+  if (!d || !Array.isArray(d.badges)) return;
+  const n = d.badges.length, makes = new Set(d.badges.map((b) => b.make).filter((m) => m && m !== "Unknown")).size;
+  const rare = d.badges.filter((b) => (b.rarity || "").toLowerCase() === "rare").length;
+  for (const [id, v] of [["statBadges", n], ["vCount", n], ["statMakes", makes], ["vMakes", makes], ["vRare", rare]]) document.getElementById(id).textContent = v;
+}).catch(() => {});
+
+// intro video
+const intro = document.getElementById("intro"), playBtn = document.getElementById("playIntro");
+playBtn.addEventListener("click", () => { intro.controls = true; playBtn.hidden = true; intro.play().catch(() => {}); });
+
+// hero video: respect reduced motion
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) { const v = document.getElementById("heroVid"); v.removeAttribute("autoplay"); v.pause(); }
+
+// offer form -> email draft
+document.getElementById("offer").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const f = Object.fromEntries(new FormData(e.target));
+  const subject = `Badge for Matty${f.make ? ": " + f.make : ""}`;
+  const body = [`Hi! I have a badge for Matty.`, ``, `Make: ${f.make || "-"}`, `I'd like to: ${f.deal}`, ``, f.msg || "", ``, `- ${f.name || ""}${f.email ? " (" + f.email + ")" : ""}`, ``, `(Photo attached)`].join("\n");
+  location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  document.getElementById("formNote").textContent = `If no email app opened, copy the address above and send your note to ${EMAIL}.`;
+});
+document.getElementById("copy").addEventListener("click", (e) => {
+  const btn = e.currentTarget;
+  navigator.clipboard.writeText(EMAIL).then(() => { btn.textContent = "Copied"; }, () => {
+    const r = document.createRange(); r.selectNodeContents(document.getElementById("addr")); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+  });
+});
+</script>
+</body>
+</html>
