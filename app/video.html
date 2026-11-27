@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Video Badge Scan</title>
+<style>
+:root { --bg:#101215; --card:#1b1f24; --line:#2c3238; --text:#eef1f4; --dim:#9aa5b1; --new:#e0b050; --have:#2fa866; --maybe:#5aa0e6; --red:#d6453d; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:16px/1.45 -apple-system, system-ui, sans-serif; }
+.wrap { max-width:960px; margin:0 auto; padding:20px 16px 60px; }
+header { display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+h1 { font-size:1.6rem; margin:0; }
+h2 { font-size:1.15rem; margin:30px 0 8px; }
+a { color:var(--new); }
+.sub { color:var(--dim); font-size:.92rem; }
+.drop { margin-top:18px; background:var(--card); border:2px dashed var(--line); border-radius:16px; padding:26px 16px; text-align:center; }
+.big { display:inline-block; background:var(--red); color:#fff; border:0; border-radius:999px; padding:16px 28px; font:700 1.15rem inherit; font-family:inherit; cursor:pointer; }
+.tips { text-align:left; margin:16px auto 0; max-width:440px; color:var(--dim); font-size:.92rem; padding-left:20px; }
+.bar { height:10px; background:#2c3238; border-radius:99px; overflow:hidden; margin-top:14px; }
+.bar i { display:block; height:100%; width:0; background:var(--new); transition:width .2s; }
+#msg { margin-top:12px; font-weight:600; }
+.counts { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+.counts div { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:10px 14px; }
+.counts b { display:block; font-size:1.6rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px; }
+.card { background:var(--card); border:1px solid var(--line); border-radius:12px; overflow:hidden; display:flex; flex-direction:column; }
+.card img { width:100%; aspect-ratio:1; object-fit:contain; background:#000; display:block; }
+.card .t { padding:8px 10px 10px; display:grid; gap:2px; flex:1; }
+.card b { font-size:.98rem; }
+.card small { color:var(--dim); font-size:.78rem; }
+.pill { font:700 .7rem/1 system-ui; text-transform:uppercase; letter-spacing:.06em; padding:4px 7px; border-radius:6px; justify-self:start; color:#111; }
+.new .pill { background:var(--new); } .maybe_in_vault .pill { background:var(--maybe); } .in_vault .pill { background:var(--have); }
+.add { margin:0 10px 10px; border:0; border-radius:8px; padding:9px; font:600 .9rem inherit; font-family:inherit; background:var(--red); color:#fff; cursor:pointer; }
+.add:disabled { background:#3a4048; }
+.jobs a { display:block; padding:8px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--text); }
+.jobs small { color:var(--dim); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎥 Video Badge Scan</h1>
+    <a href="/">← Badge scanner</a>
+  </header>
+  <p class="sub">Film your badges and the computer makes the list: which ones are new and which are already in the vault.</p>
+
+  <div class="drop" id="drop">
+    <label class="big" for="file">🎬 Pick or film a video</label>
+    <input id="file" type="file" accept="video/*" hidden>
+    <ul class="tips">
+      <li>Go <b>slowly</b>, one shelf or row at a time.</li>
+      <li>Stop for a second on each badge.</li>
+      <li>Good light, and get close enough to read the letters.</li>
+      <li>Shorter videos (under 3 minutes) work best. Do one wall per video.</li>
+    </ul>
+    <div class="bar" id="bar" hidden><i></i></div>
+    <div id="msg"></div>
+  </div>
+
+  <div id="result"></div>
+
+  <h2>Earlier scans</h2>
+  <div class="jobs" id="jobs"></div>
+</div>
+<script>
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const $ = (id) => document.getElementById(id);
+let poll;
+
+$("file").onchange = () => {
+  const f = $("file").files[0];
+  if (!f) return;
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", "/api/video/upload");
+  xhr.setRequestHeader("X-Filename", f.name);
+  $("bar").hidden = false;
+  $("msg").textContent = "Uploading…";
+  xhr.upload.onprogress = (e) => { if (e.lengthComputable) $("bar").firstChild.style.width = (100 * e.loaded / e.total) + "%"; };
+  xhr.onload = () => {
+    let j = {}; try { j = JSON.parse(xhr.responseText); } catch (e) {}
+    if (xhr.status !== 200) { $("msg").textContent = j.error || "Upload failed"; return; }
+    location.hash = j.job;
+    watch(j.job);
+  };
+  xhr.onerror = () => { $("msg").textContent = "Upload failed. Are you on home Wi-Fi?"; };
+  xhr.send(f);
+};
+
+function watch(job) {
+  clearInterval(poll);
+  const tick = async () => {
+    const r = await (await fetch(`/api/video/${job}`)).json();
+    $("msg").textContent = r.status.message || "";
+    $("bar").hidden = r.status.state !== "running";
+    if (r.status.state === "running") $("bar").firstChild.style.width = "100%";
+    if (r.status.state !== "running") { clearInterval(poll); loadJobs(); }
+    if (r.result) show(job, r.result);
+  };
+  tick();
+  poll = setInterval(tick, 3000);
+}
+
+function card(job, b) {
+  const label = { new: "New!", maybe_in_vault: "Maybe have it", in_vault: "Already have it" }[b.status];
+  const added = b.added_id ? "Added ✓" : "Add to vault";
+  return `<div class="card ${b.status}">
+    ${b.crop ? `<img src="/video-crop/${job}/${b.crop}" alt="" loading="lazy">` : ""}
+    <div class="t"><span class="pill">${label}</span><b>${esc(b.make)}</b><small>${esc(b.badge_name)}</small>
+    <small>${esc(b.look)}</small>${b.note ? `<small>${esc(b.note)}</small>` : ""}</div>
+    ${b.status !== "in_vault" && b.crop ? `<button class="add" ${b.added_id ? "disabled" : ""} onclick="add('${job}', ${b.n}, this)">${added}</button>` : ""}
+  </div>`;
+}
+
+function show(job, r) {
+  const groups = [["new", "New badges"], ["maybe_in_vault", "Might already be in the vault"], ["in_vault", "Already in the vault"]];
+  $("result").innerHTML = `
+    <div class="counts">
+      <div><b>${r.badges.length}</b>badges found</div>
+      <div><b>${r.counts.new}</b>new</div>
+      <div><b>${r.counts.maybe_in_vault}</b>maybe</div>
+      <div><b>${r.counts.in_vault}</b>already have</div>
+    </div>
+    <p class="sub">${r.duration}s of video, ${r.frames} frames checked. Counts are a best guess. Badges that look alike can get merged.
+    <a href="/api/video/${job}/csv">Download the list</a></p>
+    ${groups.map(([k, t]) => {
+      const bs = r.badges.filter((b) => b.status === k);
+      return bs.length ? `<h2>${t} (${bs.length})</h2><div class="grid">${bs.map((b) => card(job, b)).join("")}</div>` : "";
+    }).join("")}`;
+}
+
+async function add(job, n, btn) {
+  btn.disabled = true;
+  btn.textContent = "Looking it up…";
+  const res = await fetch(`/api/video/${job}/add/${n}`, { method: "POST" });
+  const j = await res.json();
+  btn.textContent = res.ok ? "Added ✓" : "Try again";
+  if (!res.ok) { btn.disabled = false; alert(j.error || "Couldn't add it"); }
+}
+
+async function loadJobs() {
+  const jobs = await (await fetch("/api/videos")).json();
+  $("jobs").innerHTML = jobs.length ? jobs.map((j) => `<a href="#${j.job}" onclick="watch('${j.job}')">
+    ${j.job.replace(/^(\d{4})(\d\d)(\d\d)-(\d\d)(\d\d).*/, "$2/$3/$1 $4:$5")}<br><small>${esc(j.message)}</small></a>`).join("")
+    : `<p class="sub">None yet.</p>`;
+}
+loadJobs();
+if (/^#\d{8}-\d{6}$/.test(location.hash)) watch(location.hash.slice(1));
+</script>
+</body>
+</html>

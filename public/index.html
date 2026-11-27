@@ -464,7 +464,7 @@ body::before {
   scrollbar-width: thin; scrollbar-color: var(--border) transparent;
 }
 .modal-img-wrap { position: relative; width: 100%; aspect-ratio: 4/3; background: #020810; overflow: hidden; }
-.modal-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.modal-img { width: 100%; height: 100%; object-fit: contain; display: block; background: #171a1e; }
 .modal-img-gradient {
   position: absolute; inset: 0;
   background: linear-gradient(to top, rgba(5,15,38,1) 0%, rgba(5,15,38,0.3) 40%, transparent 100%);
@@ -612,7 +612,7 @@ body::before {
 </div>
 
 <script>
-const GITHUB_RAW = 'https://raw.githubusercontent.com/ClawSpivak/matthew-badges/main';
+const GITHUB_RAW = 'https://raw.githubusercontent.com/airmax617/matthew-badges/main';
 
 const COUNTRY_COORDS = {
   'United States': [39, -98],
@@ -705,6 +705,8 @@ function getCountry(make) {
   return make ? (MAKE_COUNTRY[make.toLowerCase().trim()] || 'Other') : 'Other';
 }
 function rarity(b) { return (b.rarity||'common').toLowerCase().replace(/[\s_]+/g,'-'); }
+// Clean square tile (public/media/tiles, kept up to date by the image agent); falls back to the raw photo.
+function tileUrl(b) { return `${GITHUB_RAW}/public/media/tiles/${b.id}.jpg`; }
 function photoUrl(p) {
   return p ? `${GITHUB_RAW}/app/photos/${p.replace(/^\/photos\//,'')}` : null;
 }
@@ -858,7 +860,7 @@ function badgeCardHtml(b) {
   const r    = rarity(b);
   const pUrl = photoUrl(b.photo);
   const img  = pUrl
-    ? `<img class="card-img" src="${pUrl}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<div class=card-img-placeholder>🏅</div>'">`
+    ? `<img class="card-img" src="${tileUrl(b)}" alt="" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${pUrl}'}else{this.parentNode.innerHTML='<div class=card-img-placeholder>🏅</div>'}">`
     : `<div class="card-img-placeholder">🏅</div>`;
   return `
   <div class="badge-card" data-rarity="${r}" onclick="openModal('${b.id}')">
@@ -884,7 +886,7 @@ function openModal(id) {
   const flag    = code ? String.fromCodePoint(...[...code.toUpperCase()].map(c=>c.charCodeAt(0)+127397)) : '🌍';
 
   const img = document.getElementById('modal-img');
-  if (pUrl) { img.src = pUrl; img.style.display = 'block'; }
+  if (pUrl) { img.onerror = () => { img.onerror = null; img.src = pUrl; }; img.src = tileUrl(b); img.style.display = 'block'; }
   else       { img.style.display = 'none'; }
 
   document.getElementById('modal-img-rarity').textContent = RARITY_LABEL[r]||r;

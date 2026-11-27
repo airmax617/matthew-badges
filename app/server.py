@@ -32,6 +32,8 @@ except ImportError:
     from PIL import Image
 
 from openpyxl import Workbook
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import extras  # /review (image agent queue) and /video (video badge scanner)
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 
@@ -406,6 +408,8 @@ class BadgeHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        if extras.handle_get(self, path):
+            return
 
         if path == "/" or path == "/index.html":
             self.serve_file(os.path.join(BASE_DIR, "index.html"))
@@ -461,6 +465,8 @@ class BadgeHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         path = parsed.path
+        if extras.handle_post(self, path, sys.modules[__name__]):
+            return
 
         if path == "/api/ideas":
             collection = load_collection()

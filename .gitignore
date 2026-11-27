@@ -7,3 +7,7 @@ __pycache__/
 node_modules/
 app/photos_original/
 app/photos_processed/
+state/image-agent.json
+state/image-review/
+state/videos/
+state/.publish.lock
