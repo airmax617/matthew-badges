@@ -29,6 +29,15 @@ button:disabled { opacity:.5; }
 .reshoot img { width:72px; height:72px; border-radius:8px; }
 .top { display:flex; gap:10px; margin-top:14px; }
 .top button { flex:none; padding:10px 14px; }
+.again { background:#b07a1e; }
+.note { display:none; margin-top:10px; gap:8px; }
+.note.open { display:grid; }
+.note textarea { width:100%; min-height:70px; background:#101215; color:var(--text); border:1px solid var(--line);
+  border-radius:10px; padding:10px; font:inherit; resize:vertical; }
+.note .row { display:flex; gap:10px; }
+.asked { margin-top:8px; padding:8px 10px; border-left:3px solid var(--accent); background:#14171b; border-radius:6px; font-size:.9rem; }
+.asked small { display:block; color:var(--dim); }
+.working { margin-top:10px; color:var(--accent); font-weight:600; }
 </style>
 </head>
 <body>
@@ -38,7 +47,8 @@ button:disabled { opacity:.5; }
     <a href="/">← Badge scanner</a>
   </header>
   <p class="sub">Each night the image agent checks the badge pictures on matthewspivak.com and tries to make weak ones
-  better. Nothing changes on the site until you approve it here. Approved pictures go live in about 5 minutes.</p>
+  better. Nothing changes on the site until you approve it here. Approved pictures go live in about 5 minutes.
+  Close but not right? Press <b>Try again</b> and say what to change; a new version comes back in a minute or two.</p>
   <div class="top" id="top" hidden><button class="yes" id="all">Approve all</button></div>
   <div id="list"></div>
   <h2>Needs a new photo</h2>
@@ -55,20 +65,45 @@ async function load() {
   list.innerHTML = r.items.length ? r.items.map((m) => `
     <div class="item" id="i-${m.id}">
       <h3>${esc(m.name)}</h3>
-      <div class="sub">Problems: ${esc((m.problems || []).join(", ").replaceAll("_", " ") || "none listed")} · score ${m.score_before} → ${m.score_after}</div>
+      <div class="sub">Problems: ${esc((m.problems || []).join(", ").replaceAll("_", " ") || "none listed")} · score ${m.score_before} → ${m.score_after}${m.round > 1 ? ` · try ${m.round}` : ""}</div>
+      ${(m.requests || []).map((q) => `<div class="asked">You asked: ${esc(q.note)}${q.reply ? `<small>Agent: ${esc(q.reply)}</small>` : ""}</div>`).join("")}
       <div class="pair">
         <figure><img src="/review-img/${m.id}/current.jpg" alt="Live now"><figcaption>Live now</figcaption></figure>
-        <figure><img src="/review-img/${m.id}/candidate.jpg" alt="Proposed"><figcaption>Proposed (${esc(m.method)})</figcaption></figure>
+        <figure><img src="/review-img/${m.id}/candidate.jpg?v=${encodeURIComponent(m.queued || "")}" alt="Proposed"><figcaption>Proposed (${esc(m.method)})</figcaption></figure>
       </div>
+      ${m.redo && !m.redo_error ? `<div class="working">⏳ Working on your note… (refreshes by itself)</div>` : `
+      ${m.redo_error ? `<div class="working">That didn't work (${esc(m.redo_error)}). It will try again tonight, or send the note again.</div>` : ""}
       <div class="btns">
         <button class="no" onclick="decide('${m.id}', 'reject', this)">Keep current</button>
+        <button class="again" onclick="openNote('${m.id}')">Try again</button>
         <button class="yes" onclick="decide('${m.id}', 'approve', this)">Use new one</button>
       </div>
+      <div class="note" id="n-${m.id}">
+        <textarea placeholder="What should change? e.g. turn it a little to the left · the bottom of the badge is cut off · make it bigger · too dark"></textarea>
+        <div class="row"><button class="no" onclick="openNote('${m.id}')">Cancel</button>
+        <button class="again" onclick="redo('${m.id}', this)">Send</button></div>
+      </div>`}
     </div>`).join("") : `<div class="empty">Nothing waiting. 🎉</div>`;
   document.getElementById("reshoot").innerHTML = r.reshoot.length ? r.reshoot.map((x) => `
     <div class="reshoot"><img src="/tile/${x.id}.jpg" alt=""><div><b>${esc(x.seen.split(".")[0])}</b><div class="sub">${esc(x.tip)}</div></div></div>`).join("")
     : `<div class="empty">None right now.</div>`;
   document.getElementById("stats").textContent = `${r.checked} badge pictures checked so far.`;
+  clearTimeout(window.again);
+  if (r.items.some((m) => m.redo && !m.redo_error)) window.again = setTimeout(load, 8000);
+}
+function openNote(id) {
+  const n = document.getElementById("n-" + id);
+  n.classList.toggle("open");
+  if (n.classList.contains("open")) n.querySelector("textarea").focus();
+}
+async function redo(id, btn) {
+  const note = document.getElementById("n-" + id).querySelector("textarea").value.trim();
+  if (!note) return alert("Write what to change first");
+  btn.disabled = true;
+  const res = await fetch(`/api/review/${id}/redo`, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ note }) });
+  if (!res.ok) { alert((await res.json()).error || "Something went wrong"); btn.disabled = false; return; }
+  load();
 }
 async function decide(id, what, btn) {
   btn.parentNode.querySelectorAll("button").forEach((b) => (b.disabled = true));
@@ -80,7 +115,7 @@ async function decide(id, what, btn) {
 document.getElementById("all").onclick = async (e) => {
   e.target.disabled = true;
   const r = await (await fetch("/api/review")).json();
-  for (const m of r.items) await fetch(`/api/review/${m.id}/approve`, { method: "POST" });
+  for (const m of r.items.filter((x) => !x.redo)) await fetch(`/api/review/${m.id}/approve`, { method: "POST" });
   e.target.disabled = false;
   load();
 };

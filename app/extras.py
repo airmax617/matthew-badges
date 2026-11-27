@@ -90,6 +90,33 @@ def review_decide(badge_id, approve, log=print):
     return {"ok": True}, 200
 
 
+def review_redo(h, badge_id):
+    """'Try again' with a note: mark it and start the agent on just this badge."""
+    import subprocess
+    qdir = os.path.join(QUEUE, badge_id)
+    meta = _load(os.path.join(qdir, "meta.json"), None)
+    if not meta:
+        return {"error": "Not in the queue"}, 404
+    length = int(h.headers.get("Content-Length") or 0)
+    try:
+        note = str(json.loads(h.rfile.read(min(length, 10000)) or b"{}").get("note", "")).strip()[:500]
+    except ValueError:
+        note = ""
+    if not note:
+        return {"error": "Write what to change first"}, 400
+    if meta.get("redo") and not meta.get("redo_error"):
+        return {"error": "Already working on it"}, 409
+    meta.setdefault("requests", []).append({"note": note, "at": time.strftime("%Y-%m-%dT%H:%M:%S")})
+    meta.update(redo=note, redo_at=time.time())
+    meta.pop("redo_error", None)
+    _save(os.path.join(qdir, "meta.json"), meta)
+    log = open(os.path.join(ROOT, "logs", "image-agent.log"), "a")
+    subprocess.Popen(["/usr/bin/python3", os.path.join(ROOT, "tools", "image_agent.py"), "--only", badge_id,
+                      "--no-telegram"], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    log.close()
+    return {"ok": True}, 200
+
+
 # ── video scanner ─────────────────────────────────────────────────────────────
 
 def video_upload(h):
@@ -201,6 +228,11 @@ def handle_get(h, path):
 
 
 def handle_post(h, path, server):
+    m = re.fullmatch(r"/api/review/([0-9a-f]{8})/redo", path)
+    if m:
+        body, code = review_redo(h, m.group(1))
+        h.send_json(body, code)
+        return True
     m = re.fullmatch(r"/api/review/([0-9a-f]{8})/(approve|reject)", path)
     if m:
         body, code = review_decide(m.group(1), m.group(2) == "approve")
