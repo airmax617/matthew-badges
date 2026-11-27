@@ -43,7 +43,7 @@
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--garage); }
-img, video { max-width: 100%; display: block; }
+img, video { max-width: 100%; height: auto; display: block; }
 a { color: inherit; }
 :focus-visible { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 4px; }
 .wrap { max-width: var(--max); margin: 0 auto; padding-left: var(--gut); padding-right: var(--gut-r); }
@@ -486,12 +486,14 @@ const EMAIL = "spivak.matt@gmail.com";
 
 // rolling strip (duplicated once so the loop is seamless)
 const track = document.getElementById("track");
-const chip = (b, dup) => `<div class="chip${dup ? " dup" : ""}"${dup ? ' aria-hidden="true"' : ""}><img src="/media/badges/${b.id}.jpg" alt="${dup ? "" : b.make + " " + b.name}" width="120" height="120">${b.make}</div>`;
+// Badge tiles come from GitHub so improved images go live on push (no redeploy).
+const TILE = (id) => `https://raw.githubusercontent.com/airmax617/matthew-badges/main/public/media/tiles/${id}.jpg`;
+const chip = (b, dup) => `<div class="chip${dup ? " dup" : ""}"${dup ? ' aria-hidden="true"' : ""}><img src="${TILE(b.id)}" alt="${dup ? "" : b.make + " " + b.name}" width="120" height="120">${b.make}</div>`;
 track.innerHTML = BADGES.map((b) => chip(b, false)).join("") + BADGES.map((b) => chip(b, true)).join("");
 
 // vault teaser: rarest first
 const vgrid = document.getElementById("vgrid");
-vgrid.innerHTML = BADGES.slice(0, 12).map((b) => `<div class="vcard"><img src="/media/badges/${b.id}.jpg" alt="${b.make} ${b.name}" loading="lazy" width="360" height="360"><div><b>${b.make}</b><small>${b.name}</small><small class="r">${b.rarity}${b.years ? " · " + b.years : ""}</small></div></div>`).join("");
+vgrid.innerHTML = BADGES.slice(0, 12).map((b) => `<div class="vcard"><img src="${TILE(b.id)}" alt="${b.make} ${b.name}" loading="lazy" width="360" height="360"><div><b>${b.make}</b><small>${b.name}</small><small class="r">${b.rarity}${b.years ? " · " + b.years : ""}</small></div></div>`).join("");
 
 // live counts when served from matthewspivak.com
 fetch("/api/badges").then((r) => (r.ok ? r.json() : null)).then((d) => {
