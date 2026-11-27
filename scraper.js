@@ -18,8 +18,10 @@ const path = require('path');
 const CHROMIUM = '/Applications/Chromium.app/Contents/MacOS/Chromium';
 const STATE_FILE = '/Users/clawspivak/badge-hunter/state/wegotused-state.json';
 const COLLECTION_FILE = '/Users/clawspivak/badge-hunter/state/badge-collection.json';
-const TELEGRAM_TOKEN = '8750057664:AAHQ7_idVGVxS9w6iAAVCZ83szJ1HdeuuHY';
-const TELEGRAM_CHAT_ID = '1699110096';
+// Token lives in ~/.config/badge-hunter/telegram.json (not in git: this repo is public).
+const TG_CFG = (() => { try { return JSON.parse(fs.readFileSync(path.join(require('os').homedir(), '.config/badge-hunter/telegram.json'), 'utf8')); } catch { return {}; } })();
+const TELEGRAM_TOKEN = TG_CFG.token;
+const TELEGRAM_CHAT_ID = TG_CFG.chat_id || '1699110096';
 
 const DRY_RUN = process.argv.includes('--dry-run');
 const DUMP = process.argv.includes('--dump');
